@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Book Borrowing System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-book"></i> Libra<span>Read</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#catalog">Catalog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#history">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#user-books">My Books</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-link nav-link" id="dashboardLink">Dashboard</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-outline-secondary" id="themeToggle"><i class="fas fa-moon"></i></button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" id="home">
+                    <h1 class="display-4 fw-bold mb-4">Your Digital Library Card</h1>
+                    <p class="lead mb-4">Browse, borrow, and manage books from anywhere with our intuitive book borrowing system.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#catalog" class="btn btn-outline-primary btn-lg px-4">Search Books</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Library books" class="img-fluid hero-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Simple Book Borrowing in 3 Steps</h2>
+                <p class="lead text-muted">Get started with our easy-to-use system</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center p-4">
+                        <div class="step-number">1</div>
+                        <h4>Search Our Catalog</h4>
+                        <p>Find available books using our powerful search with filters for genre and availability.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4">
+                        <div class="step-number">2</div>
+                        <h4>Borrow Book</h4>
+                        <p>Check out books instantly or place holds for popular titles.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4">
+                        <div class="step-number">3</div>
+                        <h4>Enjoy & Return</h4>
+                        <p>Read at your leisure and return by the due date or renew.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container my-5">
+        <section id="catalog">
+            <h2 class="mb-4"><i class="fas fa-book-open"></i> Book Catalog</h2>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search by title or author...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="genreFilter">
+                        <option value="">All Genres</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="Non-Fiction">Non-Fiction</option>
+                        <option value="Sci-Fi">Sci-Fi</option>
+                        <option value="Mystery">Mystery</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="availabilityFilter">
+                        <option value="">All</option>
+                        <option value="Available">Available</option>
+                        <option value="Borrowed">Borrowed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row" id="bookCatalog"></div>
+        </section>
+
+            <section id="user-books" class="mt-5">
+            <h2 class="mb-4"><i class="fas fa-user"></i> My Borrowed Books</h2>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <input type="email" class="form-control" id="userEmailInput" placeholder="Enter your email to view borrowed books...">
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary" id="showUserBooksBtn"  style="display: none;">Show Books</button>
+                </div>
+            </div>
+            <div class="row" id="userBooks"></div>
+        </section>
+
+        <button class="btn btn-danger mt-3" id="resetStorageBtn"><i class="fas fa-trash"></i> Reset Storage</button>
+    </div>
+
+    <!-- Borrow Modal -->
+    <div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="borrowModalLabel">Borrow Book</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="borrowForm">
+                        <div class="mb-3">
+                            <label for="borrowerName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="borrowerName" required>
+                            <div class="invalid-feedback" id="nameError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="borrowerEmail" baltimorer class="form-label">Email</label>
+                            <input type="email" class="form-control" id="borrowerEmail" required>
+                            <div class="invalid-feedback" id="emailError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookSelect" class="form-label">Select Book</label>
+                            <select class="form-select" id="bookSelect" required></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Borrow</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Modal -->
+    <div class="modal fade" id="dashboardModal" tabindex="-1" aria-labelledby="dashboardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dashboardModalLabel">Librarian Dashboard</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="dashboardContent">
+                    <!-- Dashboard content will be dynamically loaded -->
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-file-export"></i> Export History as CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer py-5">
+        <div class="container">
+            <hr class="my-4 bg-secondary">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">© 2023 LibraRead. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">Designed with <i class="fas fa-heart text-danger"></i> for book lovers</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/script.js"></script>
+</body>
+</html>
