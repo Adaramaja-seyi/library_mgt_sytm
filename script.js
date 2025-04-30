@@ -6,7 +6,7 @@ let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let users = JSON.parse(localStorage.getItem("users")) || [];
 
 // Initialize application
-async function init() {
+async function lnitializeApp() {
   await loadInitialBooks();
   setupEventListeners();
   renderCatalog();
@@ -98,7 +98,7 @@ function renderUserBooks() {
 
   if (!emailInput || !validateEmail(emailInput)) {
     userBooksSection.innerHTML =
-      "<p class='text-muted'>Please enter a valid email to view your borrowed books.</p>";
+      "<small class='text-primary'>Please enter a valid email to  view your borrowed books.</small>";
     return;
   }
 
@@ -107,7 +107,7 @@ function renderUserBooks() {
   );
   if (!user) {
     userBooksSection.innerHTML =
-      "<p class='text-muted'>No borrowing records found for this email.</p>";
+      "<p class='text-danger'>No borrowing records found for this email.</p>";
     return;
   }
 
@@ -116,7 +116,7 @@ function renderUserBooks() {
   );
   if (userRecords.length === 0) {
     userBooksSection.innerHTML =
-      "<p class='text-muted'>You haven't borrowed any books yet.</p>";
+      "<p class='text-danger'>You haven't borrowed any books yet.</p>";
     return;
   }
 
@@ -219,6 +219,7 @@ function borrowBook(e) {
       id: generateId(),
       name,
       email,
+      createdAt: new Date
     };
     users.push(user);
   }
@@ -289,7 +290,7 @@ function showToast(message) {
                 <strong class="me-auto">LibraRead</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-            <div class="toast-body">${message}</div>
+            <div class="toast-body alert alert-success">${message}</div>
         </div>
     `;
   const toast = new bootstrap.Toast(document.getElementById(toastId), {
@@ -504,4 +505,4 @@ function setupEventListeners() {
 }
 
 // Initialize application
-init();
+lnitializeApp();

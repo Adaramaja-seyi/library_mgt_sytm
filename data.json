@@ -1,117 +1,116 @@
 {
-    "initialBooks": [
-        {
-            "id": 1,
-            "title": "Galactic",
-            "author": "F. Scott Fitzgerald",
-            "genre": "Fiction",
-            "status": "Available",
-            "cover":  "/images/galactic.jpeg"
-        },
-        {
-            "id": 2,
-            "title": "1984",
-            "author": "George Orwell",
-            "genre": "Dystopian",
-            "status": "Available",
-            "cover": "/images/download.jpeg"
-        },
-        {
-            "id": 3,
-            "title": "To Kill a Mockingbird",
-            "author": "Harper Lee",
-            "genre": "Fiction",
-            "status": "Available",
-            "cover": "/images/Mockingbird.jpeg"
-        },
-        {
-            "id": 4,
-            "title": "Whispers of the Forest",
-            "author": "Lena Hart",
-            "genres": ["Fantasy", "Adventure"],
-           "status": "Available",
-            "availability": true,
-            "cover": "./images/whisper.jpeg"
-        },
-        {
-            "id": 5,
-           "title": "Digital Horizons",
-             "author": "Carlos Mendes",
-            "genres": ["Science Fiction", "Techno-thriller"],
-            "status": "Available",
-            "cover": "./images/digital.jpeg"
-        },
-        {
-            "id": 6,
-            "title": "Beneath Crimson Skies",
-             "author": "Akira Tanaka",
-            "genres": ["Historical Fiction", "Romance"],
-            "status": "Available",
-            "cover": "./images/beneath.jpeg"
-        },
-        {
-            "id": 7,
-           "title": "The Last Algorithm",
-            "author": "Rachel Newton",
-             "genres": ["Thriller", "Dystopian"],
-            "status": "Available",
-            "cover": "./images/LAST.jpeg"
-        },
-        {
-            "id": 12,
-            "title": "Pride and Prejudice",
-            "author": "Jane Austen",
-            "genre": "Romance",
-            "status": "Available",
-            "cover": "./images/pride_prejudice.jpeg"
-        },
-        {
-            "id": 5,
-            "title": "The Da Vinci Code",
-            "author": "Dan Brown",
-            "genre": "Mystery",
-            "status": "Available",
-            "cover": "/images/davin.jpeg"
-        },
-        {
-            "id": 6,
-            "title": "Harry Potter and the Sorcerer's Stone",
-            "author": "J.K. Rowling",
-            "genre": "Fantasy",
-            "status": "Available",
-            "cover": "/images/Harry.jpeg"
-        },
-        {
-            "id": 7,
-            "title": "The Hobbit",
-            "author": "J.R.R. Tolkien",
-            "genre": "Fantasy",
-            "status": "Available",
-            "cover": "/images/hobbit.jpeg"
-        },
-        {
-            "id": 8,
-            "title": "The Catcher in the Rye",
-            "author": "J.D. Salinger",
-            "genre": "Fiction",
-            "status": "Available",
-            "cover": "/images/Catcher.jpeg"
-        },
-        {
-            "id": 9,
-            "title": "Moby Dick",
-            "author": "Herman Melville",
-            "genre": "Adventure",
-            "status": "Available",
-            "cover": "/images/Moby_Dick.jpeg"
-        },
-        {
-            "id": 10,
-            "title": "The Alchemist",
-            "author": "Paulo Coelho",
-            "genre": "Philosophical",
-            "status": "Available",
-            "cover": "/images/Alchemist.jpeg"
-        }
-    ]
+  "initialBooks": [
+    {
+      "id": 1,
+      "title": "Galactic",
+      "author": "F. Scott Fitzgerald",
+      "genre": "Fiction",
+      "status": "Available",
+      "cover": "/images/galactic.jpeg"
+    },
+    {
+      "id": 2,
+      "title": "1984",
+      "author": "George Orwell",
+      "genre": "Dystopian",
+      "status": "Available",
+      "cover": "/images/download.jpeg"
+    },
+    {
+      "id": 3,
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "genre": "Fiction",
+      "status": "Available",
+      "cover": "/images/Mockingbird.jpeg"
+    },
+    {
+      "id": 4,
+      "title": "Whispers of the Forest",
+      "author": "Lena Hart",
+      "genres": "Adventure",
+      "status": "Available",
+      "cover": "./images/whisper.jpeg"
+    },
+    {
+      "id": 5,
+      "title": "Digital Horizons",
+      "author": "Carlos Mendes",
+      "genre": "Dystopian",
+      "status": "Available",
+      "cover": "./images/digital.jpeg"
+    },
+    {
+      "id": 6,
+      "title": "Beneath Crimson Skies",
+      "author": "Akira Tanaka",
+      "genres": "Adventure",
+      "status": "Available",
+      "cover": "./images/beneath.jpeg"
+    },
+    {
+      "id": 7,
+      "title": "The Last Algorithm",
+      "author": "Rachel Newton",
+      "genres": "Adventure",
+      "status": "Available",
+      "cover": "./images/LAST.jpeg"
+    },
+    {
+      "id": 12,
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "genre": "Dystopian",
+      "status": "Available",
+      "cover": "./images/pride_prejudice.jpeg"
+    },
+    {
+      "id": 5,
+      "title": "The Da Vinci Code",
+      "author": "Dan Brown",
+      "genre": "Mystery",
+      "status": "Available",
+      "cover": "/images/davin.jpeg"
+    },
+    {
+      "id": 6,
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "author": "J.K. Rowling",
+      "genre": "Fantasy",
+      "status": "Available",
+      "cover": "/images/Harry.jpeg"
+    },
+    {
+      "id": 7,
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "genre": "Fantasy",
+      "status": "Available",
+      "cover": "/images/hobbit.jpeg"
+    },
+    {
+      "id": 8,
+      "title": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "genre": "Fiction",
+      "status": "Available",
+      "cover": "/images/Catcher.jpeg"
+    },
+    {
+      "id": 9,
+      "title": "Moby Dick",
+      "author": "Herman Melville",
+      "genre": "Adventure",
+      "status": "Available",
+      "cover": "/images/Moby_Dick.jpeg"
+    },
+    {
+      "id": 10,
+      "title": "The Alchemist",
+      "author": "Paulo Coelho",
+      "genre": "Fantasy",
+      "status": "Available",
+      "cover": "/images/Alchemist.jpeg"
+    }
+  ]
 }
