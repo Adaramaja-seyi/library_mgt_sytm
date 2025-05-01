@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container position-fixed bottom-0 top-0 p-3"></div>
@@ -48,13 +50,15 @@
             <div class="row align-items-center">
                 <div class="col-lg-6" id="home">
                     <h1 class="display-4 fw-bold mb-4">Your Digital Library Card</h1>
-                    <p class="lead mb-4">Browse, borrow, and manage books from anywhere with our intuitive book borrowing system.</p>
+                    <p class="lead mb-4">Browse, borrow, and manage books from anywhere with our intuitive book
+                        borrowing system.</p>
                     <div class="d-flex gap-3">
                         <a href="#catalog" class="btn btn-outline-primary btn-lg px-4">Search Books</a>
                     </div>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block">
-                    <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Library books" class="img-fluid hero-img">
+                    <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                        alt="Library books" class="img-fluid hero-img">
                 </div>
             </div>
         </div>
@@ -120,14 +124,15 @@
             <div class="row" id="bookCatalog"></div>
         </section>
 
-            <section id="user-books" class="mt-5">
+        <section id="user-books" class="mt-5">
             <h2 class="mb-4"><i class="fas fa-user"></i> My Borrowed Books</h2>
             <div class="row mb-4">
                 <div class="col-md-6">
-                    <input type="email" class="form-control" id="userEmailInput" placeholder="Enter your email to view borrowed books...">
+                    <input type="email" class="form-control" id="userEmailInput"
+                        placeholder="Enter your email to view borrowed books...">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-primary" id="showUserBooksBtn"  style="display: none;">Show Books</button>
+                    <button class="btn btn-primary" id="showUserBooksBtn" style="display: none;">Show Books</button>
                 </div>
             </div>
             <div class="row" id="userBooks"></div>
@@ -180,12 +185,34 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-file-export"></i> Export History as CSV</button>
+                    <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-file-export"></i> Export History
+                        as CSV</button>
                 </div>
             </div>
         </div>
     </div>
-
+    <!-- Admin Access Modal -->
+    <div class="modal fade" id="adminAccessModal" tabindex="-1" aria-labelledby="adminAccessModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminAccessModalLabel">Admin Access</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="adminAccessForm">
+                        <div class="mb-3">
+                            <label for="adminEmailInput" class="form-label">Admin Email</label>
+                            <input type="email" class="form-control" id="adminEmailInput" required>
+                            <div class="invalid-feedback" id="adminEmailError"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <footer class="footer py-5">
         <div class="container">
             <hr class="my-4 bg-secondary">
@@ -204,4 +231,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="/script.js"></script>
 </body>
+
 </html>

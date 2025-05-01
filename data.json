@@ -28,7 +28,7 @@
       "id": 4,
       "title": "Whispers of the Forest",
       "author": "Lena Hart",
-      "genres": "Adventure",
+      "genre": "Adventure",
       "status": "Available",
       "cover": "./images/whisper.jpeg"
     },
@@ -44,7 +44,7 @@
       "id": 6,
       "title": "Beneath Crimson Skies",
       "author": "Akira Tanaka",
-      "genres": "Adventure",
+      "genre": "Adventure",
       "status": "Available",
       "cover": "./images/beneath.jpeg"
     },
@@ -52,7 +52,7 @@
       "id": 7,
       "title": "The Last Algorithm",
       "author": "Rachel Newton",
-      "genres": "Adventure",
+      "genre": "Adventure",
       "status": "Available",
       "cover": "./images/LAST.jpeg"
     },

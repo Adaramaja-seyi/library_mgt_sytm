@@ -5,6 +5,27 @@ let borrowingHistory =
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let users = JSON.parse(localStorage.getItem("users")) || [];
 
+// Initialize and retrieve admin email from localStorage
+function getAdminEmail() {
+  let adminEmail = localStorage.getItem("adminEmail");
+  if (!adminEmail) {
+    adminEmail = "admin@example.com";
+    localStorage.setItem("adminEmail", adminEmail);
+  }
+  return adminEmail;
+}
+
+// Set or update admin email in localStorage (for admin use)
+function setAdminEmail(email) {
+  if (!validateEmail(email)) {
+    console.error("Invalid email format");
+    return false;
+  }
+  localStorage.setItem("adminEmail", email.trim().toLowerCase());
+  console.log(`Admin email set to: ${email}`);
+  return true;
+}
+
 // Initialize application
 async function lnitializeApp() {
   await loadInitialBooks();
@@ -63,25 +84,22 @@ function renderCatalog() {
       catalog.innerHTML += `
                 <div class="col-md-3 mb-4">
                     <div class="card book-card h-100">
-                        <img src="${book.cover}" class="card-img-top" alt="${
-        book.title
-      }">
+                        <img src="${book.cover}" class="card-img-top" alt="${book.title
+        }">
                         <div class="card-body">
                             <h5 class="card-title">${book.title}</h5>
                             <p class="card-text">Author: ${book.author}</p>
                             <p class="card-text">Genre: ${book.genre}</p>
                             <p class="card-text">Status: ${book.status}</p>
-                            <button class="btn btn-sm btn-primary ${
-                              book.status === "Borrowed" ? "disabled" : ""
-                            }" 
+                            <button class="btn btn-sm btn-primary ${book.status === "Borrowed" ? "disabled" : ""
+        }" 
                                     onclick="openBorrowModal(${book.id})">
                                 <i class="fas fa-book"></i> Borrow
                             </button>
                             <button class="btn btn-sm btn-outline-secondary" 
                                     onclick="toggleWishlist(${book.id})">
-                                <i class="fas fa-heart ${
-                                  isWishlisted ? "text-danger" : ""
-                                }"></i>
+                                <i class="fas fa-heart ${isWishlisted ? "text-danger" : ""
+        }"></i>
                             </button>
                         </div>
                     </div>
@@ -129,11 +147,11 @@ function renderUserBooks() {
                         <h5 class="card-title">${book.title}</h5>
                         <p class="card-text">Author: ${book.author}</p>
                         <p class="card-text">Borrowed: ${new Date(
-                          record.borrowDate
-                        ).toLocaleDateString()}</p>
+      record.borrowDate
+    ).toLocaleDateString()}</p>
                         <p class="card-text">Due: ${new Date(
-                          record.dueDate
-                        ).toLocaleDateString()}</p>
+      record.dueDate
+    ).toLocaleDateString()}</p>
                          <button class="btn btn-sm btn-success" 
                                 onclick="returnBook(${record.bookId}, '${record.userId}')">Return</button>
                     </div>
@@ -179,8 +197,7 @@ function openBorrowModal(bookId) {
     .filter((b) => b.status === "Available")
     .map(
       (b) =>
-        `<option value="${b.id}" ${b.id === bookId ? "selected" : ""}>${
-          b.title
+        `<option value="${b.id}" ${b.id === bookId ? "selected" : ""}>${b.title
         }</option>`
     )
     .join("");
@@ -251,8 +268,7 @@ function borrowBook(e) {
   modal.hide();
   document.getElementById("borrowForm").reset();
   showToast(
-    `${
-      book.title
+    `${book.title
     } successfully borrowed! Due date: ${dueDate.toLocaleDateString()}`
   );
 }
@@ -299,6 +315,34 @@ function showToast(message) {
   toast.show();
 }
 
+// Handle admin access form submission
+function handleAdminAccess(e) {
+  e.preventDefault();
+  const emailInput = document.getElementById("adminEmailInput");
+  const email = emailInput.value.trim().toLowerCase();
+
+  if (!validateEmail(email)) {
+    showError(emailInput, "Please enter a valid email address");
+    return;
+  }
+
+  if (email !== getAdminEmail().toLowerCase()) {
+    showError(emailInput, "Invalid email, contact the admin");
+    return;
+  }
+
+  // Clear any errors and hide the admin access modal
+  clearError(emailInput);
+  document.getElementById("adminAccessForm").reset();
+  const adminModal = bootstrap.Modal.getInstance(document.getElementById("adminAccessModal"));
+  adminModal.hide();
+
+  // Show the dashboard modal
+  updateDashboard();
+  const dashboardModal = new bootstrap.Modal(document.getElementById("dashboardModal"));
+  dashboardModal.show();
+}
+
 // Update dashboard modal
 function updateDashboard() {
   const modalBody = document.getElementById("dashboardContent");
@@ -317,9 +361,8 @@ function updateDashboard() {
               <div class="card">
                   <div class="card-body">
                       <h5>Borrowed Books</h5>
-                      <p id="totalBorrowed">${
-                        books.filter((b) => b.status === "Borrowed").length
-                      }</p>
+                      <p id="totalBorrowed">${books.filter((b) => b.status === "Borrowed").length
+    }</p>
                   </div>
               </div>
           </div>
@@ -327,9 +370,8 @@ function updateDashboard() {
               <div class="card">
                   <div class="card-body">
                       <h5>Available Books</h5>
-                      <p id="totalAvailable">${
-                        books.filter((b) => b.status === "Available").length
-                      }</p>
+                      <p id="totalAvailable">${books.filter((b) => b.status === "Available").length
+    }</p>
                   </div>
               </div>
           </div>
@@ -455,10 +497,10 @@ async function resetStorage() {
 function setupEventListeners() {
   // Theme toggle
   document.getElementById("themeToggle")?.addEventListener("click", () => {
-      document.body.classList.toggle("dark-mode");
-      const icon = document.querySelector("#themeToggle i");
-      icon.classList.toggle("fa-moon");
-      icon.classList.toggle("fa-sun");
+    document.body.classList.toggle("dark-mode");
+    const icon = document.querySelector("#themeToggle i");
+    icon.classList.toggle("fa-moon");
+    icon.classList.toggle("fa-sun");
   });
 
   // Filters and search
@@ -477,31 +519,33 @@ function setupEventListeners() {
   const borrowerName = document.getElementById("borrowerName");
   const borrowerEmail = document.getElementById("borrowerEmail");
   borrowerName?.addEventListener("input", e => {
-      const validationResult = validateName(e.target.value);
-      validationResult.isValid
-          ? clearError(e.target)
-          : showError(e.target, validationResult.messages.join(", "));
+    const validationResult = validateName(e.target.value);
+    validationResult.isValid
+      ? clearError(e.target)
+      : showError(e.target, validationResult.messages.join(", "));
   });
   borrowerEmail?.addEventListener("input", e => {
-      validateEmail(e.target.value)
-          ? clearError(e.target)
-          : showError(e.target, "Please enter a valid email address");
+    validateEmail(e.target.value)
+      ? clearError(e.target)
+      : showError(e.target, "Please enter a valid email address");
   });
 
   // User books lookup
   const userEmailInput = document.getElementById("userEmailInput");
   const showUserBooksBtn = document.getElementById("showUserBooksBtn");
   userEmailInput?.addEventListener("input", e => {
-      showUserBooksBtn.style.display = e.target.value.trim() ? "block" : "none";
+    showUserBooksBtn.style.display = e.target.value.trim() ? "block" : "none";
   });
   showUserBooksBtn?.addEventListener("click", renderUserBooks);
 
-  // Dashboard modal
+  // Dashboard modal - Show admin access modal first
   document.getElementById("dashboardLink")?.addEventListener("click", () => {
-      updateDashboard();
-      const modal = new bootstrap.Modal(document.getElementById("dashboardModal"));
-      modal.show();
+    const adminModal = new bootstrap.Modal(document.getElementById("adminAccessModal"));
+    adminModal.show();
   });
+
+  // Admin access form submission
+  document.getElementById("adminAccessForm")?.addEventListener("submit", handleAdminAccess);
 }
 
 // Initialize application
