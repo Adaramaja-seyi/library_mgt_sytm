@@ -412,35 +412,6 @@ function updateDashboard() {
           </tr>
       `;
   });
-
-  // Render genre chart
-  const genreCounts = books.reduce((acc, book) => {
-    acc[book.genre] = (acc[book.genre] || 0) + 1;
-    return acc;
-  }, {});
-
-  // new Chart(document.getElementById("genreChart"), {
-  //   type: "pie",
-  //   data: {
-  //     labels: Object.keys(genreCounts),
-  //     datasets: [
-  //       {
-  //         data: Object.values(genreCounts),
-  //         backgroundColor: [
-  //           "#ff6384",
-  //           "#36a2eb",
-  //           "#ffce56",
-  //           "#4bc0c0",
-  //           "#9966ff",
-  //         ],
-  //       },
-  //     ],
-  //   },
-  //   options: {
-  //     responsive: true,
-  //     maintainAspectRatio: false,
-  //   },
-  // });
 }
 
 // Export history as CSV
