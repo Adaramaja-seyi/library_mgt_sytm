@@ -62,7 +62,7 @@
       "author": "Jane Austen",
       "genre": "Dystopian",
       "status": "Available",
-      "cover": "./images/pride_prejudice.jpeg"
+      "cover": "/images/Pride_Prejudice.jpeg"
     },
     {
       "id": 5,
