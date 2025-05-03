@@ -28,9 +28,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="#catalog">Catalog</a>
                     </li>
-                   
+
                     <li class="nav-item">
-                        <a class="nav-link" href="#user-books">My Books</a>
+                        <a class="nav-link" href="#user-books" id="myBooksLink">My Books</a>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-link nav-link" id="dashboardLink">Dashboard</button>
@@ -122,49 +122,77 @@
             <div class="row" id="bookCatalog"></div>
         </section>
 
-        <section id="user-books" class="mt-5">
-            <h2 class="mb-4"><i class="fas fa-user"></i> My Borrowed Books</h2>
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <input type="email" class="form-control" id="userEmailInput"
-                        placeholder="Enter your email to view borrowed books...">
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-primary" id="showUserBooksBtn" style="display: none;">Show Books</button>
-                </div>
-            </div>
-            <div class="row" id="userBooks"></div>
-        </section>
-
-        
     </div>
 
-    <!-- Borrow Modal -->
-    <div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
+    <!-- Signup Modal -->
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="borrowModalLabel">Borrow Book</h5>
+                    <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="borrowForm">
+                    <form id="signupForm">
                         <div class="mb-3">
-                            <label for="borrowerName" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="borrowerName" required>
-                            <div class="invalid-feedback" id="nameError"></div>
+                            <label for="signupUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="signupUsername" required>
+                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
-                            <label for="borrowerEmail" baltimorer class="form-label">Email</label>
-                            <input type="email" class="form-control" id="borrowerEmail" required>
-                            <div class="invalid-feedback" id="emailError"></div>
+                            <label for="signupEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="signupEmail" required>
+                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
-                            <label for="bookSelect" class="form-label">Select Book</label>
-                            <select class="form-select" id="bookSelect" required></select>
+                            <label for="signupPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="signupPassword" required>
+                            <div class="invalid-feedback"></div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Borrow</button>
+                        <button type="submit" class="btn btn-primary">Sign Up</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Books Modal -->
+    <div class="modal fade" id="myBooksModal" tabindex="-1" aria-labelledby="myBooksModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="myBooksModalLabel">My Borrowed Books</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="myBooksContent">
+                    <!-- Borrowed books will be dynamically loaded -->
                 </div>
             </div>
         </div>
@@ -182,10 +210,53 @@
                     <!-- Dashboard content will be dynamically loaded -->
                 </div>
 
-                <div class="modal-footer d-flex" >
-                    <button class="btn btn-danger mt-3 reset" id="resetStorageBtn"><i class="fas fa-trash"></i> Reset Storage</button>
+                <div class="modal-footer d-flex">
+                    <button class="btn btn-danger mt-3 reset" id="resetStorageBtn"><i class="fas fa-trash"></i> Reset
+                        Storage</button>
                     <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-file-export"></i> Export History
                         as CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Book Modal -->
+    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBookModalLabel">Add New Book</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBookForm">
+                        <div class="mb-3">
+                            <label for="bookTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="bookTitle" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookAuthor" class="form-label">Author</label>
+                            <input type="text" class="form-control" id="bookAuthor" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookGenre" class="form-label">Genre</label>
+                            <select class="form-select" id="bookGenre" required>
+                                <option value="Fiction">Fiction</option>
+                                <option value="Dystopian">Dystopian</option>
+                                <option value="Adventure">Adventure</option>
+                                <option value="Fantasy">Fantasy</option>
+                                <option value="Mystery">Mystery</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookImage" class="form-label">Image URL</label>
+                            <input type="url" class="form-control" id="bookImage" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Book</button>
+                    </form>
                 </div>
             </div>
         </div>

@@ -4,6 +4,7 @@ let borrowingHistory =
   JSON.parse(localStorage.getItem("borrowingHistory")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let users = JSON.parse(localStorage.getItem("users")) || [];
+let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
 // Initialize and retrieve admin email from localStorage
 function getAdminEmail() {
@@ -32,6 +33,7 @@ async function lnitializeApp() {
   setupEventListeners();
   renderCatalog();
   renderUserBooks();
+  updateNavbar();
 }
 
 // Load initial books from data.json
@@ -55,6 +57,7 @@ function saveData() {
   localStorage.setItem("borrowingHistory", JSON.stringify(borrowingHistory));
   localStorage.setItem("wishlist", JSON.stringify(wishlist));
   localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
 }
 
 // Generate unique ID
@@ -111,48 +114,30 @@ function renderCatalog() {
 // Render user-specific borrowed books
 function renderUserBooks() {
   const userBooksSection = document.getElementById("userBooks");
-  const emailInput = document.getElementById("userEmailInput").value.trim();
   userBooksSection.innerHTML = "";
 
-  if (!emailInput || !validateEmail(emailInput)) {
-    userBooksSection.innerHTML =
-      "<small class='text-primary'>Please enter a valid email to  view your borrowed books.</small>";
+  if (!currentUser) {
+    userBooksSection.innerHTML = "<p class='text-danger'>Please log in to view your borrowed books.</p>";
     return;
   }
 
-  const user = users.find(
-    (u) => u.email.toLowerCase() === emailInput.toLowerCase()
-  );
-  if (!user) {
-    userBooksSection.innerHTML =
-      "<p class='text-danger'>No borrowing records found for this email.</p>";
-    return;
-  }
-
-  const userRecords = borrowingHistory.filter(
-    (record) => record.userId === user.id
-  );
+  const userRecords = borrowingHistory.filter(record => record.userId === currentUser.id);
   if (userRecords.length === 0) {
-    userBooksSection.innerHTML =
-      "<p class='text-danger'>You haven't borrowed any books yet.</p>";
+    userBooksSection.innerHTML = "<p class='text-danger'>You haven't borrowed any books yet.</p>";
     return;
   }
 
-  userRecords.forEach((record) => {
-    const book = books.find((b) => b.id === record.bookId);
+  userRecords.forEach(record => {
+    const book = books.find(b => b.id === record.bookId);
     userBooksSection.innerHTML += `
             <div class="col-md-4 mb-3">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">${book.title}</h5>
                         <p class="card-text">Author: ${book.author}</p>
-                        <p class="card-text">Borrowed: ${new Date(
-      record.borrowDate
-    ).toLocaleDateString()}</p>
-                        <p class="card-text">Due: ${new Date(
-      record.dueDate
-    ).toLocaleDateString()}</p>
-                         <button class="btn btn-sm btn-success" 
+                        <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
+                        <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
+                        <button class="btn btn-sm btn-success" 
                                 onclick="returnBook(${record.bookId}, '${record.userId}')">Return</button>
                     </div>
                 </div>
@@ -161,9 +146,108 @@ function renderUserBooks() {
   });
 }
 
+// show borrowed books in a modal when clicking "My Books"
+function openMyBooksModal() {
+  if (!currentUser) {
+    openLoginModal();
+    return;
+  }
+  const modal = new bootstrap.Modal(document.getElementById("myBooksModal"));
+  const modalBody = document.getElementById("myBooksContent");
+  modalBody.innerHTML = "";
+
+  const userRecords = borrowingHistory.filter(record => record.userId === currentUser.id);
+  if (userRecords.length === 0) {
+    modalBody.innerHTML = "<p class='text-danger'>You haven't borrowed any books yet.</p>";
+  } else {
+    userRecords.forEach(record => {
+      const book = books.find(b => b.id === record.bookId);
+      modalBody.innerHTML += `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">${book.title}</h5>
+                        <p class="card-text">Author: ${book.author}</p>
+                        <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
+                        <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
+                        <button class="btn btn-sm btn-success" 
+                                onclick="returnBook(${record.bookId}, '${record.userId}')">Return</button>
+                    </div>
+                </div>
+            `;
+    });
+  }
+  modal.show();
+}
+
+function openLoginModal() {
+  const modal = new bootstrap.Modal(document.getElementById("loginModal"));
+  modal.show();
+}
+
 // Input validation
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password) {
+  return password.length >= 6;
+}
+
+// User Authentication
+function signupUser(username, email, password) {
+  if (!validateName(username).isValid) return { success: false, message: "Invalid username" };
+  if (!validateEmail(email)) return { success: false, message: "Invalid email" };
+  if (!validatePassword(password)) return { success: false, message: "Password must be at least 6 characters" };
+  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    return { success: false, message: "Email already registered" };
+  }
+
+  const user = {
+    id: generateId(),
+    username,
+    email,
+    password,
+    createdAt: new Date()
+  };
+  users.push(user);
+  saveData();
+  return { success: true, user };
+}
+
+function loginUser(email, password) {
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  if (!user) return { success: false, message: "Invalid email or password" };
+  currentUser = user;
+  saveData();
+  return { success: true, user };
+}
+
+function logoutUser() {
+  currentUser = null;
+  saveData();
+  updateNavbar();
+  renderCatalog();
+  showToast("Logged out successfully!");
+}
+
+// update the navbar based on login status
+function updateNavbar() {
+  const navItems = document.querySelector(".navbar-nav.ms-auto");
+  const existingLogout = document.getElementById("logoutBtn");
+  if (existingLogout) existingLogout.remove();
+
+  if (currentUser) {
+    const welcomeItem = document.createElement("li");
+    welcomeItem.className = "nav-item";
+    welcomeItem.innerHTML = `<span class="nav-link">Welcome, ${currentUser.username}</span>`;
+    navItems.insertBefore(welcomeItem, navItems.lastElementChild);
+
+    const logoutItem = document.createElement("li");
+    logoutItem.className = "nav-item";
+    logoutItem.id = "logoutBtn";
+    logoutItem.innerHTML = `<button class="btn btn-link nav-link" onclick="logoutUser()">Logout</button>`;
+    navItems.insertBefore(logoutItem, navItems.lastElementChild);
+  }
 }
 
 function validateName(name) {
@@ -190,59 +274,28 @@ function clearError(input) {
   input.nextElementSibling.textContent = "";
 }
 
-// Borrow modal handling
+// handle direct borrowing for logged-in users.
 function openBorrowModal(bookId) {
-  const bookSelect = document.getElementById("bookSelect");
-  bookSelect.innerHTML = books
-    .filter((b) => b.status === "Available")
-    .map(
-      (b) =>
-        `<option value="${b.id}" ${b.id === bookId ? "selected" : ""}>${b.title
-        }</option>`
-    )
-    .join("");
-  const modal = new bootstrap.Modal(document.getElementById("borrowModal"));
+  if (!currentUser) {
+    openSignupModal(bookId);
+    return;
+  }
+  borrowBookDirectly(bookId);
+}
+
+function openSignupModal(bookId) {
+  const modal = new bootstrap.Modal(document.getElementById("signupModal"));
+  document.getElementById("signupForm").dataset.bookId = bookId;
   modal.show();
 }
 
-// Book operations
-function borrowBook(e) {
-  e.preventDefault();
-  const nameInput = document.getElementById("borrowerName");
-  const emailInput = document.getElementById("borrowerEmail");
-  const bookSelect = document.getElementById("bookSelect");
-  const name = nameInput.value.trim();
-  const email = emailInput.value.trim();
-  const bookId = parseInt(bookSelect.value);
-
-  // Validate inputs
-  const nameValidation = validateName(name);
-  if (!nameValidation.isValid) {
-    showError(nameInput, nameValidation.messages.join(", "));
+function borrowBookDirectly(bookId) {
+  const book = books.find(b => b.id === bookId);
+  if (!book || book.status === "Borrowed") {
+    showToast("Book is not available!");
     return;
   }
-  clearError(nameInput);
 
-  if (!validateEmail(email)) {
-    showError(emailInput, "Please enter a valid email address");
-    return;
-  }
-  clearError(emailInput);
-
-  // Find or create user
-  let user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-  if (!user) {
-    user = {
-      id: generateId(),
-      name,
-      email,
-      createdAt: new Date
-    };
-    users.push(user);
-  }
-
-  // Update book status and borrowing history
-  const book = books.find((b) => b.id === bookId);
   book.status = "Borrowed";
   const borrowDate = new Date();
   const dueDate = new Date(borrowDate);
@@ -250,28 +303,18 @@ function borrowBook(e) {
 
   borrowingHistory.push({
     bookId,
-    userId: user.id,
+    userId: currentUser.id,
     borrowDate,
     dueDate,
   });
 
-  // Save and update UI
   saveData();
   renderCatalog();
   renderUserBooks();
   updateDashboard();
-
-  // Close modal and show success message
-  const modal = bootstrap.Modal.getInstance(
-    document.getElementById("borrowModal")
-  );
-  modal.hide();
-  document.getElementById("borrowForm").reset();
-  showToast(
-    `${book.title
-    } successfully borrowed! Due date: ${dueDate.toLocaleDateString()}`
-  );
+  showToast(`${book.title} successfully borrowed! Due date: ${dueDate.toLocaleDateString()}`);
 }
+
 
 // Return book
 function returnBook(bookId, userId) {
@@ -347,71 +390,147 @@ function handleAdminAccess(e) {
 function updateDashboard() {
   const modalBody = document.getElementById("dashboardContent");
   modalBody.innerHTML = `
-      <h4>Library Statistics</h4>
-      <div class="row mb-4">
-          <div class="col-md-4">
-              <div class="card">
-                  <div class="card-body">
-                      <h5>Total Books</h5>
-                      <p id="totalBooks">${books.length}</p>
-                  </div>
-              </div>
-          </div>
-          <div class="col-md-4">
-              <div class="card">
-                  <div class="card-body">
-                      <h5>Borrowed Books</h5>
-                      <p id="totalBorrowed">${books.filter((b) => b.status === "Borrowed").length
-    }</p>
-                  </div>
-              </div>
-          </div>
-          <div class="col-md-4">
-              <div class="card">
-                  <div class="card-body">
-                      <h5>Available Books</h5>
-                      <p id="totalAvailable">${books.filter((b) => b.status === "Available").length
-    }</p>
-                  </div>
-              </div>
-          </div>
-      </div>
-      <h4>Genre Distribution</h4>
-      <canvas id="genreChart" height="200"></canvas>
-     
-      <h4 class="mt-4">Borrowing History</h4>
-      <table class="table table-striped">
-          <thead>
-              <tr>
-                  <th>Title</th>
-                  <th>Author</th>
-                  <th>Borrower</th>
-                  <th>Email</th>
-                  <th>Borrowed Date</th>
-                  <th>Due Date</th>
-              </tr>
-          </thead>
-          <tbody id="historyTableDashboard"></tbody>
-      </table>
-  `;
+        <h4>Library Statistics</h4>
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Total Books</h5>
+                        <p id="totalBooks">${books.length}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Borrowed Books</h5>
+                        <p id="totalBorrowed">${books.filter(b => b.status === "Borrowed").length}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Available Books</h5>
+                        <p id="totalAvailable">${books.filter(b => b.status === "Available").length}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h4>Genre Distribution</h4>
+        <canvas id="genreChart" height="200"></canvas>
+        <h4 class="mt-4">Book Management</h4>
+        <button class="btn btn-primary mb-3" onclick="openAddBookModal()">Add New Book</button>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Genre</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="bookTableDashboard"></tbody>
+        </table>
+        <h4 class="mt-4">Borrowing History</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Borrower</th>
+                    <th>Email</th>
+                    <th>Borrowed Date</th>
+                    <th>Due Date</th>
+                </tr>
+            </thead>
+            <tbody id="historyTableDashboard"></tbody>
+        </table>
+    `;
+
+  // Populate book table
+  const bookTable = document.getElementById("bookTableDashboard");
+  books.forEach(book => {
+    const isBorrowed = borrowingHistory.some(record => record.bookId === book.id);
+    bookTable.innerHTML += `
+            <tr>
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${book.genre}</td>
+                <td>${book.status}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger ${isBorrowed ? 'disabled' : ''}" 
+                            onclick="deleteBook(${book.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+  });
 
   // Populate borrowing history table
   const historyTable = document.getElementById("historyTableDashboard");
-  borrowingHistory.forEach((record) => {
-    const book = books.find((b) => b.id === record.bookId);
-    const user = users.find((u) => u.id === record.userId);
+  borrowingHistory.forEach(record => {
+    const book = books.find(b => b.id === record.bookId);
+    const user = users.find(u => u.id === record.userId);
     historyTable.innerHTML += `
-          <tr>
-              <td>${book.title}</td>
-              <td>${book.author}</td>
-              <td>${user.name}</td>
-              <td>${user.email}</td>
-              <td>${new Date(record.borrowDate).toLocaleDateString()}</td>
-              <td>${new Date(record.dueDate).toLocaleDateString()}</td>
-              </td>
-          </tr>
-      `;
+            <tr>
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${new Date(record.borrowDate).toLocaleDateString()}</td>
+                <td>${new Date(record.dueDate).toLocaleDateString()}</td>
+            </tr>
+        `;
   });
+}
+
+function openAddBookModal() {
+  const modal = new bootstrap.Modal(document.getElementById("addBookModal"));
+  modal.show();
+}
+
+function addBook(e) {
+  e.preventDefault();
+  const title = document.getElementById("bookTitle").value.trim();
+  const author = document.getElementById("bookAuthor").value.trim();
+  const genre = document.getElementById("bookGenre").value;
+  const image = document.getElementById("bookImage").value.trim();
+
+  if (!title || !author || !genre || !image) {
+    showToast("All fields are required!");
+    return;
+  }
+
+  const newBook = {
+    id: generateId(),
+    title,
+    author,
+    genre,
+    image,
+    status: "Available"
+  };
+  books.push(newBook);
+  saveData();
+  renderCatalog();
+  updateDashboard();
+  const modal = bootstrap.Modal.getInstance(document.getElementById("addBookModal"));
+  modal.hide();
+  document.getElementById("addBookForm").reset();
+  showToast(`${title} added successfully!`);
+}
+
+function deleteBook(bookId) {
+  if (borrowingHistory.some(record => record.bookId === bookId)) {
+    showToast("Cannot delete a borrowed book!");
+    return;
+  }
+  books = books.filter(b => b.id !== bookId);
+  wishlist = wishlist.filter(id => id !== bookId);
+  saveData();
+  renderCatalog();
+  updateDashboard();
+  showToast("Book deleted successfully!");
 }
 
 // Export history as CSV
@@ -483,31 +602,54 @@ function setupEventListeners() {
   document.getElementById("exportCsvBtn")?.addEventListener("click", exportHistoryAsCsv);
   document.getElementById("resetStorageBtn")?.addEventListener("click", resetStorage);
 
-  // Borrow form
-  document.getElementById("borrowForm")?.addEventListener("submit", borrowBook);
+  // Signup and Login forms
+  document.getElementById("signupForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("signupUsername").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const bookId = parseInt(e.target.dataset.bookId);
 
-  // Input validation
-  const borrowerName = document.getElementById("borrowerName");
-  const borrowerEmail = document.getElementById("borrowerEmail");
-  borrowerName?.addEventListener("input", e => {
-    const validationResult = validateName(e.target.value);
-    validationResult.isValid
-      ? clearError(e.target)
-      : showError(e.target, validationResult.messages.join(", "));
-  });
-  borrowerEmail?.addEventListener("input", e => {
-    validateEmail(e.target.value)
-      ? clearError(e.target)
-      : showError(e.target, "Please enter a valid email address");
+    const result = signupUser(username, email, password);
+    if (!result.success) {
+      showToast(result.message);
+      return;
+    }
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById("signupModal"));
+    modal.hide();
+    document.getElementById("signupForm").reset();
+    showToast("Signup successful! Redirecting to login...");
+    setTimeout(() => {
+      const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
+      loginModal.show();
+      document.getElementById("loginForm").dataset.bookId = bookId;
+    }, 2000);
   });
 
-  // User books lookup
-  const userEmailInput = document.getElementById("userEmailInput");
-  const showUserBooksBtn = document.getElementById("showUserBooksBtn");
-  userEmailInput?.addEventListener("input", e => {
-    showUserBooksBtn.style.display = e.target.value.trim() ? "block" : "none";
+  document.getElementById("loginForm")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const bookId = parseInt(e.target.dataset.bookId);
+
+    const result = loginUser(email, password);
+    if (!result.success) {
+      showToast(result.message);
+      return;
+    }
+
+    updateNavbar();
+    renderCatalog();
+    const modal = bootstrap.Modal.getInstance(document.getElementById("loginModal"));
+    modal.hide();
+    document.getElementById("loginForm").reset();
+    showToast(`Welcome, ${result.user.username}!`);
+    if (bookId) borrowBookDirectly(bookId);
   });
-  showUserBooksBtn?.addEventListener("click", renderUserBooks);
+
+  // Add book form
+  document.getElementById("addBookForm")?.addEventListener("submit", addBook);
 
   // Dashboard modal - Show admin access modal first
   document.getElementById("dashboardLink")?.addEventListener("click", () => {
@@ -517,6 +659,9 @@ function setupEventListeners() {
 
   // Admin access form submission
   document.getElementById("adminAccessForm")?.addEventListener("submit", handleAdminAccess);
+
+  // My Books link
+  document.getElementById("myBooksLink")?.addEventListener("click", openMyBooksModal);
 }
 
 // Initialize application
