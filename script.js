@@ -228,6 +228,7 @@ function logoutUser() {
   updateNavbar();
   renderCatalog();
   showToast("Logged out successfully!");
+  window.location.reload()
 }
 
 // update the navbar based on login status
