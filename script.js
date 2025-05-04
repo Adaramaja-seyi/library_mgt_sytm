@@ -28,7 +28,7 @@ function setAdminEmail(email) {
 }
 
 // Initialize application
-async function lnitializeApp() {
+async function initializeApp() {
   await loadInitialBooks();
   setupEventListeners();
   renderCatalog();
@@ -63,6 +63,11 @@ function saveData() {
 // Generate unique ID
 function generateId() {
   return Date.now() + Math.random().toString(36).substr(2, 9);
+}
+
+function generateNewBookId() {
+  const maxId = books.length > 0 ? Math.max(...books.map(book => Number(book.id))) : 0;
+  return maxId + 1; // Increment the highest ID
 }
 
 // Render book catalog
@@ -184,6 +189,15 @@ function openLoginModal() {
   modal.show();
 }
 
+function switchToLoginModal() {
+  const signupModal = bootstrap.Modal.getInstance(document.getElementById("signupModal"));
+  const bookId = document.getElementById("signupForm").dataset.bookId;
+  signupModal.hide();
+  const loginModal = new bootstrap.Modal(document.getElementById("loginModal"));
+  document.getElementById("loginForm").dataset.bookId = bookId;
+  loginModal.show();
+}
+
 // Input validation
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -227,27 +241,31 @@ function logoutUser() {
   saveData();
   updateNavbar();
   renderCatalog();
+  renderUserBooks();
   showToast("Logged out successfully!");
-  window.location.reload()
 }
 
 // update the navbar based on login status
 function updateNavbar() {
   const navItems = document.querySelector(".navbar-nav.ms-auto");
-  const existingLogout = document.getElementById("logoutBtn");
-  if (existingLogout) existingLogout.remove();
+  if (!navItems) return;
+
+  // Clear existing dynamic items (welcome message and logout button)
+  navItems.querySelectorAll(".nav-item.dynamic").forEach(item => item.remove());
 
   if (currentUser) {
+    // Add welcome message
     const welcomeItem = document.createElement("li");
-    welcomeItem.className = "nav-item";
+    welcomeItem.className = "nav-item dynamic";
     welcomeItem.innerHTML = `<span class="nav-link">Welcome, ${currentUser.username}</span>`;
-    navItems.insertBefore(welcomeItem, navItems.lastElementChild);
+    navItems.appendChild(welcomeItem);
 
+    // Add logout button
     const logoutItem = document.createElement("li");
-    logoutItem.className = "nav-item";
+    logoutItem.className = "nav-item dynamic";
     logoutItem.id = "logoutBtn";
-    logoutItem.innerHTML = `<button class="btn btn-link nav-link" onclick="logoutUser()">Logout</button>`;
-    navItems.insertBefore(logoutItem, navItems.lastElementChild);
+    logoutItem.innerHTML = `<button class="btn btn-danger nav-link" onclick="logoutUser()">Logout</button>`;
+    navItems.appendChild(logoutItem);
   }
 }
 
@@ -317,16 +335,53 @@ function borrowBookDirectly(bookId) {
 }
 
 
-// Return book
+// return book
 function returnBook(bookId, userId) {
-  const book = books.find((b) => b.id === bookId);
+  const book = books.find(b => b.id === bookId);
   book.status = "Available";
   borrowingHistory = borrowingHistory.filter(
-    (record) => !(record.bookId === bookId && record.userId === userId)
+    record => !(record.bookId === bookId && record.userId === userId)
   );
   saveData();
   renderCatalog();
   renderUserBooks();
+
+  // Refresh My Books modal content if open
+  const modalBody = document.getElementById("myBooksContent");
+  if (modalBody) {
+    modalBody.innerHTML = "";
+    const userRecords = borrowingHistory.filter(record => record.userId === currentUser.id);
+    if (userRecords.length === 0) {
+      modalBody.innerHTML = "<p class='text-danger'>You haven't borrowed any books yet.</p>";
+    } else {
+      userRecords.forEach(record => {
+        const book = books.find(b => b.id === record.bookId);
+        modalBody.innerHTML += `
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">${book.title}</h5>
+              <p class="card-text">Author: ${book.author}</p>
+              <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
+              <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
+              <button class="btn btn-sm btn-success" 
+                      onclick="returnBook(${record.bookId}, '${record.userId}')"
+                      id="return-btn-${record.bookId}">Return</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  // Update the specific button to "Returned" and disable it
+  const returnButton = document.getElementById(`return-btn-${bookId}`);
+  if (returnButton) {
+    returnButton.textContent = "Returned";
+    returnButton.classList.remove("btn-success");
+    returnButton.classList.add("btn-secondary");
+    returnButton.disabled = true;
+  }
+
   updateDashboard();
   showToast(`${book.title} successfully returned!`);
 }
@@ -391,81 +446,89 @@ function handleAdminAccess(e) {
 function updateDashboard() {
   const modalBody = document.getElementById("dashboardContent");
   modalBody.innerHTML = `
-        <h4>Library Statistics</h4>
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Total Books</h5>
-                        <p id="totalBooks">${books.length}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Borrowed Books</h5>
-                        <p id="totalBorrowed">${books.filter(b => b.status === "Borrowed").length}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5>Available Books</h5>
-                        <p id="totalAvailable">${books.filter(b => b.status === "Available").length}</p>
-                    </div>
-                </div>
-            </div>
+    <h4>Library Statistics</h4>
+    <div class="row mb-4">
+      <div class="col-md-4 mb-2">
+        <div class="card">
+          <div class="card-body">
+            <h5>Total Books</h5>
+            <p id="totalBooks">${books.length}</p>
+          </div>
         </div>
-        <h4>Genre Distribution</h4>
-        <canvas id="genreChart" height="200"></canvas>
-        <h4 class="mt-4">Book Management</h4>
-        <button class="btn btn-primary mb-3" onclick="openAddBookModal()">Add New Book</button>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Genre</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="bookTableDashboard"></tbody>
-        </table>
-        <h4 class="mt-4">Borrowing History</h4>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Borrower</th>
-                    <th>Email</th>
-                    <th>Borrowed Date</th>
-                    <th>Due Date</th>
-                </tr>
-            </thead>
-            <tbody id="historyTableDashboard"></tbody>
-        </table>
-    `;
+      </div>
+      <div class="col-md-4 mb-2">
+        <div class="card">
+          <div class="card-body">
+            <h5>Borrowed Books</h5>
+            <p id="totalBorrowed">${books.filter(b => b.status === "Borrowed").length}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-2">
+        <div class="card">
+          <div class="card-body">
+            <h5>Available Books</h5>
+            <p id="totalAvailable">${books.filter(b => b.status === "Available").length}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h4>Genre Distribution</h4>
+    <canvas id="genreChart" style="max-height: 300px;"></canvas>
+    <h4 class="mt-4">Book Management</h4>
+    <button class="btn btn-primary mb-3" onclick="openAddBookModal()">Add New Book</button>
+        <div class="table-responsive">
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Genre</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="bookTableDashboard"></tbody>
+    </table>
+        </div>
+
+    <h4 class="mt-4">Borrowing History</h4>
+        <div class="table-responsive">
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Borrower</th>
+          <th>Email</th>
+          <th>Borrowed Date</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+      <tbody id="historyTableDashboard"></tbody>
+    </table>
+        </div>
+
+  `;
 
   // Populate book table
   const bookTable = document.getElementById("bookTableDashboard");
   books.forEach(book => {
     const isBorrowed = borrowingHistory.some(record => record.bookId === book.id);
     bookTable.innerHTML += `
-            <tr>
-                <td>${book.title}</td>
-                <td>${book.author}</td>
-                <td>${book.genre}</td>
-                <td>${book.status}</td>
-                <td>
-                    <button class="btn btn-sm btn-danger ${isBorrowed ? 'disabled' : ''}" 
-                            onclick="deleteBook(${book.id})">Delete</button>
-                </td>
-            </tr>
-        `;
+      <tr>
+        <td>${book.title}</td>
+        <td>${book.author}</td>
+        <td>${book.genre}</td>
+        <td>${book.status}</td>
+        <td>
+          <button class="btn btn-sm btn-danger ${isBorrowed ? 'disabled' : ''}" 
+                  onclick="deleteBook(${book.id})">Delete</button>
+        </td>
+      </tr>
+    `;
   });
 
   // Populate borrowing history table
@@ -474,15 +537,82 @@ function updateDashboard() {
     const book = books.find(b => b.id === record.bookId);
     const user = users.find(u => u.id === record.userId);
     historyTable.innerHTML += `
-            <tr>
-                <td>${book.title}</td>
-                <td>${book.author}</td>
-                <td>${user.username}</td>
-                <td>${user.email}</td>
-                <td>${new Date(record.borrowDate).toLocaleDateString()}</td>
-                <td>${new Date(record.dueDate).toLocaleDateString()}</td>
-            </tr>
-        `;
+      <tr>
+        <td>${book.title}</td>
+        <td>${book.author}</td>
+        <td>${user.username}</td>
+        <td>${user.email}</td>
+        <td>${new Date(record.borrowDate).toLocaleDateString()}</td>
+        <td>${new Date(record.dueDate).toLocaleDateString()}</td>
+      </tr>
+    `;
+  });
+
+  const modalFooter = document.querySelector("#dashboardModal .modal-footer");
+  modalFooter.className = "modal-footer d-flex flex-column flex-sm-row gap-2";
+  modalFooter.innerHTML = `
+    <button class="btn btn-danger btn-full-width-mobile reset" id="resetStorageBtn"><i class="fas fa-trash"></i> Reset Storage</button>
+    <button class="btn btn-primary btn-full-width-mobile" id="exportCsvBtn"><i class="fas fa-file-export"></i> Export History as CSV</button>
+  `;
+
+  // Calculate genre distribution
+  const genreCounts = books.reduce((acc, book) => {
+    acc[book.genre] = (acc[book.genre] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Render bar chart
+  const ctx = document.getElementById("genreChart").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(genreCounts),
+      datasets: [
+        {
+          label: "Number of Books",
+          data: Object.values(genreCounts),
+          backgroundColor: [
+            "#FF6384",
+            "#36A2EB",
+            "#FFCE56",
+            "#4BC0C0",
+            "#9966FF",
+          ],
+          borderColor: [
+            "#FF6384",
+            "#36A2EB",
+            "#FFCE56",
+            "#4BC0C0",
+            "#9966FF",
+          ],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Number of Books",
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Genre",
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          display: false, // Hide legend for bar chart (optional)
+        },
+      },
+    },
   });
 }
 
@@ -496,19 +626,19 @@ function addBook(e) {
   const title = document.getElementById("bookTitle").value.trim();
   const author = document.getElementById("bookAuthor").value.trim();
   const genre = document.getElementById("bookGenre").value;
-  const image = document.getElementById("bookImage").value.trim();
+  const cover = document.getElementById("bookImage").value.trim();
 
-  if (!title || !author || !genre || !image) {
+  if (!title || !author || !genre || !cover) {
     showToast("All fields are required!");
     return;
   }
 
   const newBook = {
-    id: generateId(),
+    id: generateNewBookId(),
     title,
     author,
     genre,
-    image,
+    cover,
     status: "Available"
   };
   books.push(newBook);
@@ -517,7 +647,7 @@ function addBook(e) {
   updateDashboard();
   const modal = bootstrap.Modal.getInstance(document.getElementById("addBookModal"));
   modal.hide();
-  document.getElementById("addBookForm").reset();
+  document.getElementById("addNewBook").reset();
   showToast(`${title} added successfully!`);
 }
 
@@ -543,7 +673,7 @@ function exportHistoryAsCsv() {
     csv += `"${book.title.replace(/"/g, '""')}","${book.author.replace(
       /"/g,
       '""'
-    )}","${user.name.replace(/"/g, '""')}","${user.email.replace(
+    )}","${user.username.replace(/"/g, '""')}","${user.email.replace(
       /"/g,
       '""'
     )}",${new Date(record.borrowDate).toLocaleDateString()},${new Date(
@@ -650,7 +780,7 @@ function setupEventListeners() {
   });
 
   // Add book form
-  document.getElementById("addBookForm")?.addEventListener("submit", addBook);
+  document.getElementById("addNewBook")?.addEventListener("submit", addBook);
 
   // Dashboard modal - Show admin access modal first
   document.getElementById("dashboardLink")?.addEventListener("click", () => {
@@ -664,6 +794,13 @@ function setupEventListeners() {
   // My Books link
   document.getElementById("myBooksLink")?.addEventListener("click", openMyBooksModal);
 }
+// Ensure navbar updates after DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("currentUser") && !currentUser) {
+    currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  }
+  updateNavbar();
+});
 
 // Initialize application
-lnitializeApp();
+initializeApp();
