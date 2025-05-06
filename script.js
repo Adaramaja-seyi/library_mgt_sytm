@@ -116,40 +116,40 @@ function renderCatalog() {
     });
 }
 
-// Render user-specific borrowed books
-function renderUserBooks() {
-  const userBooksSection = document.getElementById("userBooks");
-  userBooksSection.innerHTML = "";
+// // Render user-specific borrowed books
+// function renderUserBooks() {
+//   const userBooksSection = document.getElementById("userBooks");
+//   userBooksSection.innerHTML = "";
 
-  if (!currentUser) {
-    userBooksSection.innerHTML = "<p class='text-danger'>Please log in to view your borrowed books.</p>";
-    return;
-  }
+//   if (!currentUser) {
+//     userBooksSection.innerHTML = "<p class='text-danger'>Please log in to view your borrowed books.</p>";
+//     return;
+//   }
 
-  const userRecords = borrowingHistory.filter(record => record.userId === currentUser.id);
-  if (userRecords.length === 0) {
-    userBooksSection.innerHTML = "<p class='text-danger'>You haven't borrowed any books yet.</p>";
-    return;
-  }
+//   const userRecords = borrowingHistory.filter(record => record.userId === currentUser.id);
+//   if (userRecords.length === 0) {
+//     userBooksSection.innerHTML = "<p class='text-danger'>You haven't borrowed any books yet.</p>";
+//     return;
+//   }
 
-  userRecords.forEach(record => {
-    const book = books.find(b => b.id === record.bookId);
-    userBooksSection.innerHTML += `
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">${book.title}</h5>
-                        <p class="card-text">Author: ${book.author}</p>
-                        <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
-                        <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
-                        <button class="btn btn-sm btn-success" 
-                                onclick="returnBook(${record.bookId}, '${record.userId}')">Return</button>
-                    </div>
-                </div>
-            </div>
-        `;
-  });
-}
+//   userRecords.forEach(record => {
+//     const book = books.find(b => b.id === record.bookId);
+//     userBooksSection.innerHTML += `
+//             <div class="col-md-4 mb-3">
+//                 <div class="card">
+//                     <div class="card-body">
+//                         <h5 class="card-title">${book.title}</h5>
+//                         <p class="card-text">Author: ${book.author}</p>
+//                         <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
+//                         <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
+//                         <button class="btn btn-sm btn-success" 
+//                                 onclick="returnBook(${record.bookId}, '${record.userId}')">Return</button>
+//                     </div>
+//                 </div>
+//             </div>
+//         `;
+//   });
+// }
 
 // show borrowed books in a modal when clicking "My Books"
 function openMyBooksModal() {
@@ -334,57 +334,57 @@ function borrowBookDirectly(bookId) {
   showToast(`${book.title} successfully borrowed! Due date: ${dueDate.toLocaleDateString()}`);
 }
 
-
 // return book
 function returnBook(bookId, userId) {
   const book = books.find(b => b.id === bookId);
+  if (!book) return;
   book.status = "Available";
   borrowingHistory = borrowingHistory.filter(
     record => !(record.bookId === bookId && record.userId === userId)
   );
   saveData();
   renderCatalog();
-  renderUserBooks();
 
-  // Refresh My Books modal content if open
   const modalBody = document.getElementById("myBooksContent");
   if (modalBody) {
+  
     modalBody.innerHTML = "";
+
     const userRecords = borrowingHistory.filter(record => record.userId === currentUser.id);
     if (userRecords.length === 0) {
       modalBody.innerHTML = "<p class='text-danger'>You haven't borrowed any books yet.</p>";
     } else {
       userRecords.forEach(record => {
         const book = books.find(b => b.id === record.bookId);
-        modalBody.innerHTML += `
-          <div class="card mb-3">
-            <div class="card-body">
-              <h5 class="card-title">${book.title}</h5>
-              <p class="card-text">Author: ${book.author}</p>
-              <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
-              <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
-              <button class="btn btn-sm btn-success" 
-                      onclick="returnBook(${record.bookId}, '${record.userId}')"
-                      id="return-btn-${record.bookId}">Return</button>
+        if (book) {
+          modalBody.innerHTML += `
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">${book.title}</h5>
+                <p class="card-text">Author: ${book.author}</p>
+                <p class="card-text">Borrowed: ${new Date(record.borrowDate).toLocaleDateString()}</p>
+                <p class="card-text">Due: ${new Date(record.dueDate).toLocaleDateString()}</p>
+                <button class="btn btn-sm btn-success" 
+                        onclick="returnBook(${record.bookId}, '${record.userId}')"
+                        id="return-btn-${record.bookId}">Return</button>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       });
     }
+
+   
+    modal.show();
   }
 
-  // Update the specific button to "Returned" and disable it
-  const returnButton = document.getElementById(`return-btn-${bookId}`);
-  if (returnButton) {
-    returnButton.textContent = "Returned";
-    returnButton.classList.remove("btn-success");
-    returnButton.classList.add("btn-secondary");
-    returnButton.disabled = true;
-  }
 
   updateDashboard();
+
   showToast(`${book.title} successfully returned!`);
 }
+
+
 
 // Toggle wishlist
 function toggleWishlist(bookId) {
@@ -430,13 +430,12 @@ function handleAdminAccess(e) {
     return;
   }
 
-  // Clear any errors and hide the admin access modal
   clearError(emailInput);
   document.getElementById("adminAccessForm").reset();
   const adminModal = bootstrap.Modal.getInstance(document.getElementById("adminAccessModal"));
   adminModal.hide();
 
-  // Show the dashboard modal
+
   updateDashboard();
   const dashboardModal = new bootstrap.Modal(document.getElementById("dashboardModal"));
   dashboardModal.show();
