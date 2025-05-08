@@ -464,7 +464,7 @@ function updateDashboard() {
       </tr>
     `;
   });
-  // organizes the borrowing history by users.
+  // organizes the borrowing history by users.mnmmm
 
   const historyTable = document.getElementById("historyTableDashboard");
   const userBorrowingMap = borrowingHistory.reduce((acc, record) => {
