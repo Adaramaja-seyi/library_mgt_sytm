@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Book Borrowing System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/style.css">
 </head>
 
@@ -136,17 +136,17 @@
                     <form id="signupForm">
                         <div class="mb-3">
                             <label for="signupUsername" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="signupUsername" required>
+                            <input type="text" class="form-control" id="signupUsername" >
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="signupEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="signupEmail" required>
+                            <input type="email" class="form-control" id="signupEmail" >
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="signupPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="signupPassword" required>
+                            <input type="password" class="form-control" id="signupPassword" >
                             <div class="invalid-feedback"></div>
                         </div>
                         <button type="submit" class="btn btn-primary">Sign Up</button>
@@ -172,12 +172,12 @@
                     <form id="loginForm">
                         <div class="mb-3">
                             <label for="loginEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="loginEmail" required>
+                            <input type="email" class="form-control" id="loginEmail" >
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="mb-3">
                             <label for="loginPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="loginPassword" required>
+                            <input type="password" class="form-control" id="loginPassword" >
                             <div class="invalid-feedback"></div>
                         </div>
                         <button type="submit" class="btn btn-primary">Login</button>
@@ -215,8 +215,8 @@
                 </div>
 
                 <div class="modal-footer d-flex">
-                    <button class="btn btn-danger mt-3 reset" id="resetStorageBtn"><i class="fas fa-trash"></i> Reset
-                        Storage</button>
+                    <!-- <button class="btn btn-danger mt-3 reset" id="resetStorageBtn"><i class="fas fa-trash"></i> Reset
+                        Storage</button> -->
                     <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-file-export"></i> Export History
                         as CSV</button>
                 </div>

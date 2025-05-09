@@ -6,6 +6,20 @@
 body {
   transition: background-color 0.3s, color 0.3s;
 }
+
+
+#historyTableDashboard ul li {
+ background-color: rgba(108, 117, 125, 0.1);
+padding: 8px;
+ margin-bottom: 8px;
+border-radius: 4px;
+}
+#historyTableDashboard ul {
+ list-style: none;
+padding-left: 0;
+}
+
+
 .reset {
   margin-top: 3px !important;
 }
