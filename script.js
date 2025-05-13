@@ -1,9 +1,11 @@
+// Data Storage
 let books = JSON.parse(localStorage.getItem("books")) || [];
 let borrowingHistory = JSON.parse(localStorage.getItem("borrowingHistory")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let users = JSON.parse(localStorage.getItem("users")) || [];
 let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
+// Retriving Admin Email in localStorage
 function getAdminEmail() {
   let adminEmail = localStorage.getItem("adminEmail");
   if (!adminEmail) {
@@ -27,7 +29,7 @@ async function initializeApp() {
   await loadInitialBooks();
   setupEventListeners();
   renderCatalog();
-  renderUserBooks();
+  // renderUserBooks();
   updateNavbar();
 }
 
@@ -37,7 +39,10 @@ async function loadInitialBooks() {
     if (!response.ok) throw new Error("Failed to fetch initial books");
     const data = await response.json();
     if (books.length === 0) {
-      books = data.initialBooks;
+      books = data.initialBooks.map(book => ({
+        ...book,
+        id: Number(book.id)
+      }));
       saveData();
     }
   } catch (error) {
@@ -59,7 +64,7 @@ function generateId() {
 
 function generateNewBookId() {
   const maxId = books.length > 0 ? Math.max(...books.map(book => Number(book.id))) : 0;
-  return maxId + 1; 
+  return maxId + 1;
 }
 
 function renderCatalog() {
@@ -188,14 +193,14 @@ function loginUser(email, password) {
 
 function logoutUser() {
   const confirmation = confirm("Are you sure you want to logout")
-  if (confirmation){
+  if (confirmation) {
     currentUser = null;
     saveData();
     updateNavbar();
     renderCatalog();
-    renderUserBooks();
+    // renderUserBooks();
     showToast("Logged out successfully!");
-  }else{
+  } else {
     console.log("Logout canceled by the user.")
   }
 }
@@ -244,6 +249,7 @@ function clearError(input) {
 }
 
 function openBorrowModal(bookId) {
+  bookId = Number(bookId);
   if (!currentUser) {
     openSignupModal(bookId);
     return;
@@ -258,6 +264,7 @@ function openSignupModal(bookId) {
 }
 
 function borrowBookDirectly(bookId) {
+  bookId = Number(bookId);
   const book = books.find(b => b.id === bookId);
   if (!book || book.status === "Borrowed") {
     showToast("This book has been borrowed!");
@@ -278,7 +285,7 @@ function borrowBookDirectly(bookId) {
 
   saveData();
   renderCatalog();
-  renderUserBooks();
+  // renderUserBooks();
   updateDashboard();
 }
 
@@ -286,7 +293,7 @@ function returnBook(bookId, userId) {
   const book = books.find(b => b.id === bookId);
   if (!book) return;
   book.status = "Available";
-  
+
   borrowingHistory = borrowingHistory.filter(
     record => !(record.bookId === bookId && record.userId === userId)
   );
@@ -328,7 +335,7 @@ function returnBook(bookId, userId) {
 }
 
 function toggleWishlist(bookId) {
-  wishlist = wishlist.includes(bookId)? wishlist.filter((id) => id !== bookId)    : [...wishlist, bookId];
+  wishlist = wishlist.includes(bookId) ? wishlist.filter((id) => id !== bookId) : [...wishlist, bookId];
   saveData();
   renderCatalog();
 }
@@ -339,7 +346,7 @@ function showToast(message) {
     console.error("Toast container not found in the DOM");
     return;
   }
-  
+
   const toastId = `toast-${Date.now()}`;
   toastContainer.innerHTML += `
     <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
@@ -351,7 +358,7 @@ function showToast(message) {
       </div>
     </div>
   `;
-  
+
   const toastElement = document.getElementById(toastId);
   const toast = new bootstrap.Toast(toastElement, {
     delay: 2000,
@@ -607,18 +614,18 @@ function addBook(e) {
 function deleteBook(bookId) {
   const book = books.find(b => b.id === bookId);
   if (!book) return;
-  
+
   if (borrowingHistory.some(record => record.bookId === bookId)) {
     showToast("Cannot delete a borrowed book!");
     return;
   }
-  
+
   const confirmation = confirm(`Are you sure you want to delete "${book.title}"?`);
   if (!confirmation) {
     showToast("Book deletion canceled.");
     return;
   }
-  
+
   books = books.filter(b => b.id !== bookId);
   saveData();
   renderCatalog();
@@ -663,7 +670,7 @@ function setupEventListeners() {
   document.getElementById("availabilityFilter")?.addEventListener("change", renderCatalog);
 
   document.getElementById("exportCsvBtn")?.addEventListener("click", exportHistoryAsCsv);
-  document.getElementById("resetStorageBtn")?.addEventListener("click", resetStorage);
+
 
   document.getElementById("signupForm")?.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -693,7 +700,7 @@ function setupEventListeners() {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
-    const bookId = parseInt(e.target.dataset.bookId);
+    const bookId = Number(e.target.dataset.bookId);
 
     const result = loginUser(email, password);
     if (!result.success) {

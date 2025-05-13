@@ -33,7 +33,7 @@
       "cover": "./images/whisper.jpeg"
     },
     {
-      "id": 5,
+      "id": 19,
       "title": "Digital Horizons",
       "author": "Carlos Mendes",
       "genre": "Dystopian",
@@ -73,7 +73,7 @@
       "cover": "/images/davin.jpeg"
     },
     {
-      "id": 6,
+      "id": 15,
       "title": "Harry Potter and the Sorcerer's Stone",
       "author": "J.K. Rowling",
       "genre": "Fantasy",
@@ -81,7 +81,7 @@
       "cover": "/images/Harry.jpeg"
     },
     {
-      "id": 7,
+      "id": 17,
       "title": "The Hobbit",
       "author": "J.R.R. Tolkien",
       "genre": "Fantasy",
