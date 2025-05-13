@@ -1,9 +1,11 @@
+// Data Storage
 let books = JSON.parse(localStorage.getItem("books")) || [];
 let borrowingHistory = JSON.parse(localStorage.getItem("borrowingHistory")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let users = JSON.parse(localStorage.getItem("users")) || [];
 let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
+// Retrieves admin email from localStorage or sets a default
 function getAdminEmail() {
   let adminEmail = localStorage.getItem("adminEmail");
   if (!adminEmail) {
@@ -12,7 +14,7 @@ function getAdminEmail() {
   }
   return adminEmail;
 }
-
+// Sets a new admin email if valid
 function setAdminEmail(email) {
   if (!validateEmail(email)) {
     console.error("Invalid email format");
@@ -22,12 +24,11 @@ function setAdminEmail(email) {
   console.log(`Admin email set to: ${email}`);
   return true;
 }
-
+// Initializes the app by loading books, setting up listeners, and rendering UI
 async function initializeApp() {
   await loadInitialBooks();
   setupEventListeners();
   renderCatalog();
-  renderUserBooks();
   updateNavbar();
 }
 
@@ -37,7 +38,10 @@ async function loadInitialBooks() {
     if (!response.ok) throw new Error("Failed to fetch initial books");
     const data = await response.json();
     if (books.length === 0) {
-      books = data.initialBooks;
+      books = data.initialBooks.map(book => ({
+        ...book,
+        id: Number(book.id)
+      }));
       saveData();
     }
   } catch (error) {
@@ -56,12 +60,12 @@ function saveData() {
 function generateId() {
   return Date.now() + Math.random().toString(36).substr(2, 9);
 }
-
+// Generates a new sequential book ID
 function generateNewBookId() {
   const maxId = books.length > 0 ? Math.max(...books.map(book => Number(book.id))) : 0;
-  return maxId + 1; 
+  return maxId + 1;
 }
-
+// Renders the book catalog with search and filter functionality
 function renderCatalog() {
   const catalog = document.getElementById("bookCatalog");
   catalog.innerHTML = "";
@@ -103,7 +107,7 @@ function renderCatalog() {
             `;
     });
 }
-
+// Opens a modal to display the user's borrowed books
 function openMyBooksModal() {
   if (!currentUser) {
     openLoginModal();
@@ -140,7 +144,7 @@ function openLoginModal() {
   const modal = new bootstrap.Modal(document.getElementById("loginModal"));
   modal.show();
 }
-
+// Switches from signup modal to login modal, preserving book ID
 function switchToLoginModal() {
   const signupModal = bootstrap.Modal.getInstance(document.getElementById("signupModal"));
   const bookId = document.getElementById("signupForm").dataset.bookId;
@@ -157,7 +161,7 @@ function validateEmail(email) {
 function validatePassword(password) {
   return password.length >= 6;
 }
-
+// Registers a new user if inputs are valid
 function signupUser(username, email, password) {
   if (!validateName(username).isValid) return { success: false, message: "Invalid username" };
   if (!validateEmail(email)) return { success: false, message: "Invalid email" };
@@ -188,18 +192,18 @@ function loginUser(email, password) {
 
 function logoutUser() {
   const confirmation = confirm("Are you sure you want to logout")
-  if (confirmation){
+  if (confirmation) {
     currentUser = null;
     saveData();
     updateNavbar();
     renderCatalog();
-    renderUserBooks();
+    // renderUserBooks();
     showToast("Logged out successfully!");
-  }else{
+  } else {
     console.log("Logout canceled by the user.")
   }
 }
-
+// Updates the navigation bar based on user login status
 function updateNavbar() {
   const navItems = document.querySelector(".navbar-nav.ms-auto");
   if (!navItems) return;
@@ -244,6 +248,7 @@ function clearError(input) {
 }
 
 function openBorrowModal(bookId) {
+  bookId = Number(bookId);
   if (!currentUser) {
     openSignupModal(bookId);
     return;
@@ -256,8 +261,9 @@ function openSignupModal(bookId) {
   document.getElementById("signupForm").dataset.bookId = bookId;
   modal.show();
 }
-
+// Borrows a book directly for the logged-in user
 function borrowBookDirectly(bookId) {
+  bookId = Number(bookId);
   const book = books.find(b => b.id === bookId);
   if (!book || book.status === "Borrowed") {
     showToast("This book has been borrowed!");
@@ -278,15 +284,15 @@ function borrowBookDirectly(bookId) {
 
   saveData();
   renderCatalog();
-  renderUserBooks();
+  // renderUserBooks();
   updateDashboard();
 }
-
+// Returns a borrowed book and updates records
 function returnBook(bookId, userId) {
   const book = books.find(b => b.id === bookId);
   if (!book) return;
   book.status = "Available";
-  
+
   borrowingHistory = borrowingHistory.filter(
     record => !(record.bookId === bookId && record.userId === userId)
   );
@@ -326,20 +332,20 @@ function returnBook(bookId, userId) {
   updateDashboard();
   showToast(`${book.title} returned successfully!`);
 }
-
+// Toggles a book in/out of the wishlist
 function toggleWishlist(bookId) {
-  wishlist = wishlist.includes(bookId)? wishlist.filter((id) => id !== bookId)    : [...wishlist, bookId];
+  wishlist = wishlist.includes(bookId) ? wishlist.filter((id) => id !== bookId) : [...wishlist, bookId];
   saveData();
   renderCatalog();
 }
-
+// Displays a toast notification
 function showToast(message) {
   const toastContainer = document.getElementById("toastContainer");
   if (!toastContainer) {
     console.error("Toast container not found in the DOM");
     return;
   }
-  
+
   const toastId = `toast-${Date.now()}`;
   toastContainer.innerHTML += `
     <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
@@ -351,14 +357,14 @@ function showToast(message) {
       </div>
     </div>
   `;
-  
+
   const toastElement = document.getElementById(toastId);
   const toast = new bootstrap.Toast(toastElement, {
     delay: 2000,
   });
   toast.show();
 }
-
+// Handles admin access authentication
 function handleAdminAccess(e) {
   e.preventDefault();
   const emailInput = document.getElementById("adminEmailInput");
@@ -383,7 +389,7 @@ function handleAdminAccess(e) {
   const dashboardModal = new bootstrap.Modal(document.getElementById("dashboardModal"));
   dashboardModal.show();
 }
-
+// Updates the admin dashboard with library statistics and management tools
 function updateDashboard() {
   const modalBody = document.getElementById("dashboardContent");
   modalBody.innerHTML = `
@@ -503,7 +509,7 @@ function updateDashboard() {
       </tr>
     `;
   });
-
+  // counting how many books belong to each genre in a list
   const genreCounts = books.reduce((acc, book) => {
     acc[book.genre] = (acc[book.genre] || 0) + 1;
     return acc;
@@ -573,7 +579,7 @@ function openAddBookModal() {
   const modal = new bootstrap.Modal(document.getElementById("addBookModal"));
   modal.show();
 }
-
+// Adds a new book to the library
 function addBook(e) {
   e.preventDefault();
   const title = document.getElementById("bookTitle").value.trim();
@@ -603,29 +609,29 @@ function addBook(e) {
   document.getElementById("addNewBook").reset();
   showToast(`${title} added successfully!`);
 }
-
+// Deletes a book if not borrowed, after confirmation
 function deleteBook(bookId) {
   const book = books.find(b => b.id === bookId);
   if (!book) return;
-  
+
   if (borrowingHistory.some(record => record.bookId === bookId)) {
     showToast("Cannot delete a borrowed book!");
     return;
   }
-  
+
   const confirmation = confirm(`Are you sure you want to delete "${book.title}"?`);
   if (!confirmation) {
     showToast("Book deletion canceled.");
     return;
   }
-  
+
   books = books.filter(b => b.id !== bookId);
   saveData();
   renderCatalog();
   updateDashboard();
   showToast("Book deleted successfully!");
 }
-
+// Exports borrowing history as a CSV file
 function exportHistoryAsCsv() {
   let csv = "Title,Author,User Name,User Email,Borrowed Date,Due Date\n";
   borrowingHistory.forEach((record) => {
@@ -649,7 +655,7 @@ function exportHistoryAsCsv() {
   a.click();
   URL.revokeObjectURL(url);
 }
-
+// Sets up event listeners for UI interactions
 function setupEventListeners() {
   document.getElementById("themeToggle")?.addEventListener("click", () => {
     document.body.classList.toggle("dark-mode");
@@ -663,7 +669,7 @@ function setupEventListeners() {
   document.getElementById("availabilityFilter")?.addEventListener("change", renderCatalog);
 
   document.getElementById("exportCsvBtn")?.addEventListener("click", exportHistoryAsCsv);
-  document.getElementById("resetStorageBtn")?.addEventListener("click", resetStorage);
+
 
   document.getElementById("signupForm")?.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -693,7 +699,7 @@ function setupEventListeners() {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
-    const bookId = parseInt(e.target.dataset.bookId);
+    const bookId = Number(e.target.dataset.bookId);
 
     const result = loginUser(email, password);
     if (!result.success) {
@@ -721,7 +727,7 @@ function setupEventListeners() {
 
   document.getElementById("myBooksLink")?.addEventListener("click", openMyBooksModal);
 }
-
+// Initializes app state on page load
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("currentUser") && !currentUser) {
     currentUser = JSON.parse(localStorage.getItem("currentUser"));
