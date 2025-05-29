@@ -7,10 +7,10 @@ let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
 // Retrieves admin email from localStorage or sets a default
 function getAdminEmail() {
-  let adminEmail = localStorage.getItem("adminEmail");
+  let adminEmail = localStorage.getItem("SeyiEmail");
   if (!adminEmail) {
-    adminEmail = "admin@example.com";
-    localStorage.setItem("adminEmail", adminEmail);
+    adminEmail = "seyii@example.com";
+    localStorage.setItem("SeyiEmail", adminEmail);
   }
   return adminEmail;
 }
@@ -69,7 +69,7 @@ function generateNewBookId() {
 function renderCatalog() {
   const catalog = document.getElementById("bookCatalog");
   catalog.innerHTML = "";
-  const search = document.getElementById("searchInput").value.toLowerCase();
+  const search = document.getElementById("searchInput").value.toLowerCase()  ;
   const genre = document.getElementById("genreFilter").value;
   const availability = document.getElementById("availabilityFilter").value;
 
@@ -110,7 +110,9 @@ function renderCatalog() {
 // Opens a modal to display the user's borrowed books
 function openMyBooksModal() {
   if (!currentUser) {
+    showToast("Please login to view your borrowed books.");
     openLoginModal();
+
     return;
   }
   const modal = new bootstrap.Modal(document.getElementById("myBooksModal"));
@@ -167,7 +169,7 @@ function signupUser(username, email, password) {
   if (!validateEmail(email)) return { success: false, message: "Invalid email" };
   if (!validatePassword(password)) return { success: false, message: "Password must be at least 6 characters" };
   if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    return { success: false, message: "Email already registered" };
+    return { success: false, message: "User with this email already exist" };
   }
 
   const user = {
@@ -266,9 +268,9 @@ function borrowBookDirectly(bookId) {
   bookId = Number(bookId);
   const book = books.find(b => b.id === bookId);
   if (!book || book.status === "Borrowed") {
-    showToast("This book has been borrowed!");
     return;
   }
+  showToast(`${book.title} as been borrowed successfully`)
 
   book.status = "Borrowed";
   const borrowDate = new Date();
@@ -339,7 +341,7 @@ function toggleWishlist(bookId) {
   renderCatalog();
 }
 // Displays a toast notification
-function showToast(message) {
+function showToast(message, variant = "success") {
   const toastContainer = document.getElementById("toastContainer");
   if (!toastContainer) {
     console.error("Toast container not found in the DOM");
@@ -347,8 +349,13 @@ function showToast(message) {
   }
 
   const toastId = `toast-${Date.now()}`;
+  const validVariants = ["success", "danger", "warning", "info", "primary", "secondary", "dark", "light"];
+
+  // Sanitize and fallback if variant is not recognized
+  const safeVariant = validVariants.includes(variant) ? variant : "secondary";
+
   toastContainer.innerHTML += `
-    <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="${toastId}" class="toast align-items-center text-white bg-${safeVariant} border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">
           ${message}
@@ -360,7 +367,7 @@ function showToast(message) {
 
   const toastElement = document.getElementById(toastId);
   const toast = new bootstrap.Toast(toastElement, {
-    delay: 2000,
+    delay: 1000,
   });
   toast.show();
 }
@@ -703,7 +710,7 @@ function setupEventListeners() {
 
     const result = loginUser(email, password);
     if (!result.success) {
-      showToast(result.message);
+      showToast(result.message, "danger");
       return;
     }
 

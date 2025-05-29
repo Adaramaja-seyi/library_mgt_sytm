@@ -139,6 +139,9 @@ body.dark-mode {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
 }
+.is-invalid{
+  color: red;
+}
 
 .table-responsive table {
   min-width: 600px; /* Ensure table is wide enough to trigger scrolling on small screens */
